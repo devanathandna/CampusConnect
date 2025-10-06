@@ -86,7 +86,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setCurrentUser, posts, a
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Skills</h2>
             <div className="flex flex-wrap gap-2">
-              {currentUser?.skills.map((skill: string) => (
+              {currentUser?.skills?.map((skill: string) => (
                 <span key={skill} className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-medium">
                   {skill}
                   <Award className="w-4 h-4 inline ml-2" />
@@ -105,7 +105,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setCurrentUser, posts, a
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Interests</h2>
             <div className="flex flex-wrap gap-2">
-              {currentUser?.interests.map((interest: string) => (
+              {currentUser?.interests?.map((interest: string) => (
                 <span key={interest} className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full">
                   {interest}
                 </span>

@@ -10,12 +10,23 @@ const notificationSchema = new mongoose.Schema({
       'message', 
       'event_reminder',
       'event_invitation',
+      'event_update',
+      'event_cancelled',
       'endorsement',
       'mentorship_request',
+      'mentorship_accepted',
+      'mentorship_session',
       'post_like',
-      'post_comment'
+      'post_comment',
+      'post_share',
+      'group_invitation',
+      'group_request',
+      'badge_earned',
+      'level_up',
+      'announcement'
     ],
-    required: true
+    required: true,
+    index: true
   },
   title: String,
   message: String,

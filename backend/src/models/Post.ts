@@ -5,26 +5,53 @@ const postSchema = new mongoose.Schema({
   content: { type: String, required: true },
   type: { 
     type: String, 
-    enum: ['update', 'opportunity', 'achievement', 'question'],
-    default: 'update'
+    enum: ['status', 'job', 'opportunity', 'achievement', 'announcement', 'article', 'question'],
+    default: 'status',
+    index: true
   },
   attachments: [{
-    type: String,
-    url: String
+    type: { type: String, enum: ['image', 'video', 'document'] },
+    url: String,
+    thumbnail: String
   }],
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  tags: [String],
+  // For job/opportunity posts
+  opportunityDetails: {
+    title: String,
+    company: String,
+    location: String,
+    deadline: Date,
+    applyLink: String,
+    type: { type: String, enum: ['internship', 'full-time', 'part-time', 'volunteer', 'research'] }
+  },
+  likes: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+  }],
   comments: [{
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     content: String,
     createdAt: { type: Date, default: Date.now }
   }],
-  visibility: { type: String, enum: ['public', 'connections'], default: 'public' },
+  shares: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  visibility: { 
+    type: String, 
+    enum: ['public', 'connections', 'private'], 
+    default: 'public' 
+  },
+  isPinned: { type: Boolean, default: false },
+  isReported: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 postSchema.index({ author: 1, createdAt: -1 });
+postSchema.index({ type: 1, createdAt: -1 });
+postSchema.index({ tags: 1 });
 const Post = mongoose.model('Post', postSchema);
 
 export default Post;

@@ -7,6 +7,9 @@ import Events from '../events/EventsList';
 import Mentorship from './Mentorship';
 import Messages from '../messaging/Messages';
 import Profile from '../profile/Profile';
+import GroupsPage from '../groups/GroupsPage';
+import Leaderboard from '../gamification/Leaderboard';
+import { BadgeShowcase } from '../gamification/BadgeShowcase';
 
 interface DashboardProps {
   currentUser: any;
@@ -249,18 +252,21 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, setCurrentUser }) =>
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
-      <div className="flex">
+      <div className="flex bg-gray-50 min-h-screen">
         <Sidebar
           activeView={activeView}
           setActiveView={setActiveView}
           sidebarOpen={sidebarOpen}
         />
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 animate-fade-in">
           {activeView === 'feed' && <Feed currentUser={currentUser} posts={posts} createPost={createPost} />}
           {activeView === 'network' && <Network currentUser={currentUser} sendConnectionRequest={sendConnectionRequest} setChatUser={setChatUser} setActiveView={setActiveView} />}
           {activeView === 'events' && <Events events={events} rsvpEvent={rsvpEvent} createEvent={createEvent} />}
           {activeView === 'mentorship' && <Mentorship requestMentorship={requestMentorship} />}
           {activeView === 'messages' && <Messages currentUser={currentUser} messages={messages} chatUser={chatUser} setChatUser={setChatUser} messageInput={messageInput} setMessageInput={setMessageInput} sendMessage={sendMessage} />}
+          {activeView === 'groups' && <GroupsPage currentUser={currentUser} />}
+          {activeView === 'leaderboard' && <Leaderboard currentUserId={currentUser.id} />}
+          {activeView === 'badges' && <BadgeShowcase badges={currentUser.gamification?.badges || []} allBadges={[]} />}
           {activeView === 'profile' && <Profile currentUser={currentUser} setCurrentUser={setCurrentUser} posts={posts} addNotification={addNotification} />}
         </main>
       </div>

@@ -29,6 +29,53 @@ const userSchema = new mongoose.Schema({
     endorsedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdAt: { type: Date, default: Date.now }
   }],
+  // Career & Academic Information
+  careerGoals: String,
+  currentPosition: String,
+  experience: [{
+    title: String,
+    company: String,
+    location: String,
+    startDate: Date,
+    endDate: Date,
+    current: Boolean,
+    description: String
+  }],
+  education: [{
+    institution: String,
+    degree: String,
+    field: String,
+    startYear: Number,
+    endYear: Number,
+    current: Boolean
+  }],
+  // Mentorship Information
+  mentorProfile: {
+    isAvailable: { type: Boolean, default: false },
+    expertiseAreas: [String],
+    availability: String,
+    maxMentees: { type: Number, default: 5 },
+    bio: String,
+    achievements: [String]
+  },
+  // Gamification
+  gamification: {
+    points: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    badges: [{
+      name: String,
+      description: String,
+      icon: String,
+      earnedAt: { type: Date, default: Date.now }
+    }],
+    stats: {
+      eventsAttended: { type: Number, default: 0 },
+      connectionsAdded: { type: Number, default: 0 },
+      mentorshipHours: { type: Number, default: 0 },
+      skillsEndorsed: { type: Number, default: 0 },
+      postsCreated: { type: Number, default: 0 }
+    }
+  },
   privacy: {
     profileVisibility: { type: String, enum: ['public', 'connections', 'private'], default: 'public' },
     showEmail: { type: Boolean, default: false }
