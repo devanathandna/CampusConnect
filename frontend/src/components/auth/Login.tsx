@@ -1,65 +1,32 @@
 import React, { useState } from 'react';
 import { Users, Mail, Lock, GraduationCap, Briefcase, BookOpen, Sparkles } from 'lucide-react';
+import api from '../../services/api';
 
 interface LoginProps {
   setCurrentUser: (user: any) => void;
+  onSwitchToRegister?: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ setCurrentUser }) => {
+const Login: React.FC<LoginProps> = ({ setCurrentUser, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'student' | 'alumni' | 'faculty'>('student');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async (email: string, password: string, role: string) => {
     setIsLoading(true);
+    setError('');
     
-    // Simulate API call
-    setTimeout(() => {
-      const user = {
-        id: Date.now().toString(),
-        email,
-        role,
-        profile: {
-          name: email.split('@')[0].replace('.', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-          bio: 'Passionate about technology and learning.',
-          major: role === 'student' ? 'Computer Science' : undefined,
-          graduationYear: role === 'student' ? '2025' : '2020',
-          company: role === 'alumni' ? 'Tech Corp' : undefined,
-          department: role === 'faculty' ? 'Computer Science' : undefined,
-          skills: ['JavaScript', 'React', 'Node.js', 'Python'],
-          interests: ['Web Development', 'AI/ML', 'Career Development'],
-          location: 'San Francisco, CA',
-        },
-        connections: [],
-        endorsements: [],
-        experience: [],
-        education: [],
-        gamification: {
-          points: 0,
-          level: 1,
-          badges: [],
-          stats: {
-            eventsAttended: 0,
-            connectionsAdded: 0,
-            mentorshipHours: 0,
-            skillsEndorsed: 0,
-            postsCreated: 0,
-          }
-        },
-        privacy: {
-          profileVisibility: 'public' as const,
-          showEmail: false,
-        },
-        isActive: true,
-        lastActive: new Date(),
-        createdAt: new Date(),
-      };
-      
-      setCurrentUser(user);
+    try {
+      const response = await api.login(email, password, role);
+      setCurrentUser(response.user);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      console.error('Login error:', err);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const roleOptions = [
@@ -147,6 +114,13 @@ const Login: React.FC<LoginProps> = ({ setCurrentUser }) => {
             </div>
 
             <div className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Email Input */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
@@ -217,6 +191,19 @@ const Login: React.FC<LoginProps> = ({ setCurrentUser }) => {
                   'Sign In'
                 )}
               </button>
+
+              {/* Register Link */}
+              {onSwitchToRegister && (
+                <div className="text-center text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <button
+                    onClick={onSwitchToRegister}
+                    className="font-semibold text-primary-600 hover:text-primary-700 hover:underline"
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
 
               <p className="text-center text-sm text-gray-500">
                 <Sparkles className="w-4 h-4 inline mr-1" />

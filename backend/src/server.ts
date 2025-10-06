@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+
+// Load environment variables FIRST before any other imports
+dotenv.config();
+
 import express, { Application, Request, Response } from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
@@ -9,11 +14,13 @@ import rateLimit from 'express-rate-limit';
 import passport from 'passport';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
-import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
 
-dotenv.config();
+// Import configurations
+import './config/passport';
+import './config/database';
+
+// Import routes
+import authRoutes from './routes/auth';
 
 // Initialize Express App
 const app: Application = express();
@@ -65,6 +72,30 @@ app.use(session({
 // Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
+
+// ============================================================================
+// ROUTES
+// ============================================================================
+
+app.use('/api/auth', authRoutes);
+
+// Health check
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+// 404 handler
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// ============================================================================
+// SERVER STARTUP
+// ============================================================================
 
 const PORT = process.env.PORT || 5000;
 
