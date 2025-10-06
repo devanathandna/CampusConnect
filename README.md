@@ -25,6 +25,7 @@ CampusConnect is a professional networking platform designed specifically for ca
 - **Real-time Messaging**: Instant messaging with Socket.IO
 - **Dynamic News Feed**: Post updates, opportunities, and achievements
 - **Advanced Search**: Elasticsearch-powered search across profiles and content
+- **🎓 Collective Knowledge Hub** ⭐ NEW: Searchable repository of institutional wisdom where alumni and faculty share career advice, interview tips, and course guidance. Features full-text search, community voting, verification system, and contextual mentor linking
 
 ---
 
