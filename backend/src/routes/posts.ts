@@ -1,12 +1,18 @@
-import express, { Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { isAuthenticated } from '../middleware/auth';
 import Post from '../models/Post';
 import User from '../models/User';
 import Notification from '../models/Notification';
-import { app,io } from '../server';
+
+const router = Router();
+let io: any;
+
+export const setSocketIO = (socketIO: any) => {
+  io = socketIO;
+};
 
 // Create post
-app.post('/api/posts', isAuthenticated, async (req: any, res: Response) => {
+router.post('/', isAuthenticated, async (req: any, res: Response) => {
   try {
     const post = new Post({
       author: req.user._id,
@@ -29,7 +35,7 @@ app.post('/api/posts', isAuthenticated, async (req: any, res: Response) => {
 });
 
 // Get feed
-app.get('/api/posts/feed', isAuthenticated, async (req: any, res: Response) => {
+router.get('/feed', isAuthenticated, async (req: any, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
@@ -58,7 +64,7 @@ app.get('/api/posts/feed', isAuthenticated, async (req: any, res: Response) => {
 });
 
 // Like post
-app.post('/api/posts/:id/like', isAuthenticated, async (req: any, res: Response) => {
+router.post('/:id/like', isAuthenticated, async (req: any, res: Response) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
@@ -90,7 +96,7 @@ app.post('/api/posts/:id/like', isAuthenticated, async (req: any, res: Response)
 });
 
 // Comment on post
-app.post('/api/posts/:id/comment', isAuthenticated, async (req: any, res: Response) => {
+router.post('/:id/comment', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { content } = req.body;
     
@@ -123,3 +129,5 @@ app.post('/api/posts/:id/comment', isAuthenticated, async (req: any, res: Respon
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+export default router;

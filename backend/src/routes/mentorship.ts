@@ -1,10 +1,16 @@
-import express, { Response } from 'express';
+import { Router, Response } from 'express';
 import { isAuthenticated } from '../middleware/auth';
 import Mentorship from '../models/Mentorship';
 import Notification from '../models/Notification';
-import { app,io } from '../server';
 
-app.post('/api/mentorship/request', isAuthenticated, async (req: any, res: Response) => {
+const router = Router();
+let io: any;
+
+export const setSocketIO = (socketIO: any) => {
+  io = socketIO;
+};
+
+router.post('/request', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { mentor, topic, description, goals } = req.body;
 
@@ -39,7 +45,7 @@ app.post('/api/mentorship/request', isAuthenticated, async (req: any, res: Respo
 });
 
 // Accept/Update mentorship
-app.put('/api/mentorship/:id', isAuthenticated, async (req: any, res: Response) => {
+router.put('/:id', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { status, startDate, endDate } = req.body;
 
@@ -65,7 +71,7 @@ app.put('/api/mentorship/:id', isAuthenticated, async (req: any, res: Response) 
 });
 
 // Get mentorship requests
-app.get('/api/mentorship/requests', isAuthenticated, async (req: any, res: Response) => {
+router.get('/requests', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { role } = req.query;
     const query: any = { status: 'pending' };
@@ -88,7 +94,7 @@ app.get('/api/mentorship/requests', isAuthenticated, async (req: any, res: Respo
 });
 
 // Get active mentorships
-app.get('/api/mentorship/active', isAuthenticated, async (req: any, res: Response) => {
+router.get('/active', isAuthenticated, async (req: any, res: Response) => {
   try {
     const mentorships = await Mentorship.find({
       $or: [{ mentor: req.user._id }, { mentee: req.user._id }],
@@ -102,3 +108,5 @@ app.get('/api/mentorship/active', isAuthenticated, async (req: any, res: Respons
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+export default router;

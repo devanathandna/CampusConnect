@@ -21,6 +21,13 @@ import './config/database';
 
 // Import routes
 import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
+import postRoutes, { setSocketIO as setPostSocketIO } from './routes/posts';
+import eventRoutes from './routes/events';
+import connectionRoutes, { setSocketIO as setConnectionSocketIO } from './routes/connections';
+import mentorshipRoutes, { setSocketIO as setMentorshipSocketIO } from './routes/mentorship';
+import messageRoutes, { setSocketIO as setMessageSocketIO } from './routes/messages';
+import knowledgeRoutes from './routes/knowledge';
 
 // Initialize Express App
 const app: Application = express();
@@ -74,10 +81,27 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ============================================================================
+// SOCKET.IO CONFIGURATION
+// ============================================================================
+
+// Pass Socket.IO to routes that need it
+setPostSocketIO(io);
+setConnectionSocketIO(io);
+setMentorshipSocketIO(io);
+setMessageSocketIO(io);
+
+// ============================================================================
 // ROUTES
 // ============================================================================
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/connections', connectionRoutes);
+app.use('/api/mentorship', mentorshipRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/knowledge', knowledgeRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {

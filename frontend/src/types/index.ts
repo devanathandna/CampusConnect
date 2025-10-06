@@ -427,3 +427,54 @@ export interface TopPost {
   comments: number;
   shares: number;
 }
+
+// Knowledge Hub Types
+export interface KnowledgePost {
+  _id: string;
+  title: string;
+  body: string;
+  author: User | string;
+  category: 
+    | 'career-advice'
+    | 'interview-tips'
+    | 'industry-insights'
+    | 'course-guidance'
+    | 'research-tips'
+    | 'networking-strategies'
+    | 'skill-development'
+    | 'job-search'
+    | 'academic-to-industry'
+    | 'other';
+  tags: string[];
+  company?: string;
+  industry?: string;
+  relatedSkills: string[];
+  courseCodes?: string[];
+  suggestedMentors: (User | string)[];
+  verifiedByAdmin: boolean;
+  verifiedBy?: User | string;
+  verifiedAt?: Date;
+  upvotes: (User | string)[];
+  downvotes: (User | string)[];
+  voteScore: number;
+  views: number;
+  helpfulCount: number;
+  bookmarks: (User | string)[];
+  comments: KnowledgeComment[];
+  isActive: boolean;
+  isPinned: boolean;
+  isEvergreen: boolean;
+  expiresAt?: Date;
+  aiGeneratedTags?: string[];
+  aiSuggestedSkills?: string[];
+  aiMatchScore?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface KnowledgeComment {
+  user: User | string;
+  content: string;
+  createdAt: Date;
+  upvotes: (User | string)[];
+}

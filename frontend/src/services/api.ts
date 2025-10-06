@@ -8,10 +8,11 @@ import {
   Notification, 
   Group,
   SkillGap,
-  Analytics 
+  Analytics,
+  KnowledgePost
 } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
   private token: string | null = null;
@@ -24,6 +25,7 @@ class ApiService {
     const url = `${API_BASE_URL}${endpoint}`;
     const config: RequestInit = {
       ...options,
+      credentials: 'include', // Important: Send cookies with requests for session auth
       headers: {
         'Content-Type': 'application/json',
         ...(this.token && { Authorization: `Bearer ${this.token}` }),
@@ -35,13 +37,17 @@ class ApiService {
       const response = await fetch(url, config);
       
       if (response.status === 401) {
-        this.logout();
-        window.location.href = '/login';
+        // Only redirect if we're not already on the login page
+        if (!window.location.pathname.includes('/login')) {
+          this.logout();
+          window.location.href = '/';
+        }
         throw new Error('Unauthorized');
       }
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `API Error: ${response.status}`);
       }
 
       return await response.json();
@@ -62,7 +68,10 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({ email, password, role }),
     });
-    this.setToken(data.token);
+    // For session-based auth, token is just a placeholder
+    if (data.token && data.token !== 'session-based-auth') {
+      this.setToken(data.token);
+    }
     return data;
   }
 
@@ -71,13 +80,21 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(userData),
     });
-    this.setToken(data.token);
+    // For session-based auth, token is just a placeholder
+    if (data.token && data.token !== 'session-based-auth') {
+      this.setToken(data.token);
+    }
     return data;
   }
 
-  logout() {
+  async logout(): Promise<void> {
     this.token = null;
     localStorage.removeItem('auth_token');
+    try {
+      await this.request<void>('/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   }
 
   // ==================== USERS ====================
@@ -295,6 +312,95 @@ class ApiService {
   // ==================== ANALYTICS ====================
   async getAnalytics(period: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'weekly'): Promise<Analytics> {
     return this.request<Analytics>(`/analytics?period=${period}`);
+  }
+
+  // ==================== KNOWLEDGE HUB ====================
+  async searchKnowledgePosts(params: {
+    q?: string;
+    category?: string;
+    company?: string;
+    industry?: string;
+    skill?: string;
+    courseCode?: string;
+    verified?: boolean;
+    evergreen?: boolean;
+    sortBy?: 'relevance' | 'recent' | 'popular' | 'helpful';
+    page?: number;
+    limit?: number;
+  }): Promise<{ posts: KnowledgePost[]; total: number; page: number; pages: number }> {
+    const queryString = new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = String(value);
+        }
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString();
+    
+    return this.request<{ posts: KnowledgePost[]; total: number; page: number; pages: number }>(
+      `/knowledge/search?${queryString}`
+    );
+  }
+
+  async getKnowledgePost(id: string): Promise<{ post: KnowledgePost }> {
+    return this.request<{ post: KnowledgePost }>(`/knowledge/${id}`);
+  }
+
+  async createKnowledgePost(postData: {
+    title: string;
+    body: string;
+    category: string;
+    tags?: string[];
+    company?: string;
+    industry?: string;
+    relatedSkills?: string[];
+    courseCodes?: string[];
+    isEvergreen?: boolean;
+  }): Promise<{ message: string; post: KnowledgePost }> {
+    return this.request<{ message: string; post: KnowledgePost }>('/knowledge', {
+      method: 'POST',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  async voteKnowledgePost(id: string, voteType: 'up' | 'down'): Promise<{ upvotes: number; downvotes: number; voteScore: number }> {
+    return this.request<{ upvotes: number; downvotes: number; voteScore: number }>(`/knowledge/${id}/vote`, {
+      method: 'POST',
+      body: JSON.stringify({ voteType }),
+    });
+  }
+
+  async markKnowledgePostHelpful(id: string): Promise<{ helpfulCount: number }> {
+    return this.request<{ helpfulCount: number }>(`/knowledge/${id}/helpful`, {
+      method: 'POST',
+    });
+  }
+
+  async bookmarkKnowledgePost(id: string): Promise<{ bookmarked: boolean; bookmarkCount: number }> {
+    return this.request<{ bookmarked: boolean; bookmarkCount: number }>(`/knowledge/${id}/bookmark`, {
+      method: 'POST',
+    });
+  }
+
+  async commentOnKnowledgePost(id: string, content: string): Promise<{ comments: any[] }> {
+    return this.request<{ comments: any[] }>(`/knowledge/${id}/comment`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  async verifyKnowledgePost(id: string): Promise<{ message: string; post: KnowledgePost }> {
+    return this.request<{ message: string; post: KnowledgePost }>(`/knowledge/${id}/verify`, {
+      method: 'POST',
+    });
+  }
+
+  async getBookmarkedKnowledgePosts(): Promise<{ posts: KnowledgePost[] }> {
+    return this.request<{ posts: KnowledgePost[] }>('/knowledge/user/bookmarks');
+  }
+
+  async getTrendingKnowledgePosts(): Promise<{ posts: KnowledgePost[] }> {
+    return this.request<{ posts: KnowledgePost[] }>('/knowledge/trending');
   }
 }
 

@@ -1,10 +1,16 @@
-import express, { Response } from 'express';
+import { Router, Response } from 'express';
 import { isAuthenticated } from '../middleware/auth';
 import Message from '../models/Message';
 import Notification from '../models/Notification';
-import { app, io } from '../server';
 
-app.post('/api/messages', isAuthenticated, async (req: any, res: Response) => {
+const router = Router();
+let io: any;
+
+export const setSocketIO = (socketIO: any) => {
+  io = socketIO;
+};
+
+router.post('/', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { to, content, attachments } = req.body;
 
@@ -48,7 +54,7 @@ app.post('/api/messages', isAuthenticated, async (req: any, res: Response) => {
 });
 
 // Get conversation
-app.get('/api/messages/:userId', isAuthenticated, async (req: any, res: Response) => {
+router.get('/:userId', isAuthenticated, async (req: any, res: Response) => {
   try {
     const conversationId = [req.user._id.toString(), req.params.userId]
       .sort()
@@ -67,7 +73,7 @@ app.get('/api/messages/:userId', isAuthenticated, async (req: any, res: Response
 });
 
 // Get conversations list
-app.get('/api/messages/conversations/list', isAuthenticated, async (req: any, res: Response) => {
+router.get('/conversations/list', isAuthenticated, async (req: any, res: Response) => {
   try {
     const messages = await Message.aggregate([
       {
@@ -107,7 +113,7 @@ app.get('/api/messages/conversations/list', isAuthenticated, async (req: any, re
 });
 
 // Mark messages as read
-app.put('/api/messages/:conversationId/read', isAuthenticated, async (req: any, res: Response) => {
+router.put('/:conversationId/read', isAuthenticated, async (req: any, res: Response) => {
   try {
     await Message.updateMany(
       {
@@ -123,3 +129,5 @@ app.put('/api/messages/:conversationId/read', isAuthenticated, async (req: any, 
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+export default router;

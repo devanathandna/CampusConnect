@@ -1,11 +1,12 @@
-import express, { Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { isAuthenticated } from '../middleware/auth';
 import User from '../models/User';
 import Notification from '../models/Notification';
-import {app} from '../server';
 
-app.get('/api/users/:id', isAuthenticated, async (req: Request, res: Response) => {
+const router = Router();
+
+router.get('/:id', isAuthenticated, async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.id)
       .select('-password')
@@ -22,7 +23,7 @@ app.get('/api/users/:id', isAuthenticated, async (req: Request, res: Response) =
 });
 
 // Update user profile
-app.put('/api/users/:id', isAuthenticated, async (req: any, res: Response) => {
+router.put('/:id', isAuthenticated, async (req: any, res: Response) => {
   try {
     if (req.user._id.toString() !== req.params.id) {
       return res.status(403).json({ error: 'Forbidden' });
@@ -42,7 +43,7 @@ app.put('/api/users/:id', isAuthenticated, async (req: any, res: Response) => {
 });
 
 // Search users
-app.get('/api/users/search', isAuthenticated, async (req: Request, res: Response) => {
+router.get('/search', isAuthenticated, async (req: Request, res: Response) => {
   try {
     const { q, role, skills, major } = req.query;
     const query: any = { isActive: true };
@@ -72,7 +73,7 @@ app.get('/api/users/search', isAuthenticated, async (req: Request, res: Response
 });
 
 // Endorse skill
-app.post('/api/users/:id/endorse', isAuthenticated, async (req: any, res: Response) => {
+router.post('/:id/endorse', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { skill } = req.body;
     
@@ -111,3 +112,5 @@ app.post('/api/users/:id/endorse', isAuthenticated, async (req: any, res: Respon
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+export default router;

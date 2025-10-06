@@ -1,11 +1,17 @@
-import express, { Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { isAuthenticated } from '../middleware/auth';
 import User from '../models/User';
 import Connection from '../models/Connection';
 import Notification from '../models/Notification';
-import { app,io } from '../server';
 
-app.post('/api/connections/request', isAuthenticated, async (req: any, res: Response) => {
+const router = Router();
+let io: any;
+
+export const setSocketIO = (socketIO: any) => {
+  io = socketIO;
+};
+
+router.post('/request', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { to, message } = req.body;
 
@@ -51,7 +57,7 @@ app.post('/api/connections/request', isAuthenticated, async (req: any, res: Resp
 });
 
 // Accept/Reject connection
-app.put('/api/connections/:id', isAuthenticated, async (req: any, res: Response) => {
+router.put('/:id', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { status } = req.body;
 
@@ -97,7 +103,7 @@ app.put('/api/connections/:id', isAuthenticated, async (req: any, res: Response)
 });
 
 // Get user connections
-app.get('/api/connections', isAuthenticated, async (req: any, res: Response) => {
+router.get('/', isAuthenticated, async (req: any, res: Response) => {
   try {
     const user = await User.findById(req.user._id)
       .populate('connections', 'profile.name profile.avatar role profile.company profile.major');
@@ -109,7 +115,7 @@ app.get('/api/connections', isAuthenticated, async (req: any, res: Response) => 
 });
 
 // Get pending connection requests
-app.get('/api/connections/pending', isAuthenticated, async (req: any, res: Response) => {
+router.get('/pending', isAuthenticated, async (req: any, res: Response) => {
   try {
     const requests = await Connection.find({
       to: req.user._id,
@@ -121,3 +127,5 @@ app.get('/api/connections/pending', isAuthenticated, async (req: any, res: Respo
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+export default router;

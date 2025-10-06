@@ -1,11 +1,12 @@
-import express, { Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { isAuthenticated } from '../middleware/auth';
 import Event from '../models/Event';
 import Notification from '../models/Notification';
-import {app} from '../server';
+
+const router = Router();
 
 // Create event
-app.post('/api/events', isAuthenticated, async (req: any, res: Response) => {
+router.post('/', isAuthenticated, async (req: any, res: Response) => {
   try {
     const eventData = {
       ...req.body,
@@ -22,7 +23,7 @@ app.post('/api/events', isAuthenticated, async (req: any, res: Response) => {
 });
 
 // Get events
-app.get('/api/events', isAuthenticated, async (req: Request, res: Response) => {
+router.get('/', isAuthenticated, async (req: Request, res: Response) => {
   try {
     const { category, startDate, endDate } = req.query;
     const query: any = { isPublished: true };
@@ -43,7 +44,7 @@ app.get('/api/events', isAuthenticated, async (req: Request, res: Response) => {
 });
 
 // RSVP to event
-app.post('/api/events/:id/rsvp', isAuthenticated, async (req: any, res: Response) => {
+router.post('/:id/rsvp', isAuthenticated, async (req: any, res: Response) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) {
@@ -87,7 +88,7 @@ app.post('/api/events/:id/rsvp', isAuthenticated, async (req: any, res: Response
 });
 
 // Submit event feedback
-app.post('/api/events/:id/feedback', isAuthenticated, async (req: any, res: Response) => {
+router.post('/:id/feedback', isAuthenticated, async (req: any, res: Response) => {
   try {
     const { rating, comment } = req.body;
     
@@ -110,3 +111,5 @@ app.post('/api/events/:id/feedback', isAuthenticated, async (req: any, res: Resp
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+export default router;

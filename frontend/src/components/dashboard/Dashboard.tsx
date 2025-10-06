@@ -10,6 +10,7 @@ import Profile from '../profile/Profile';
 import GroupsPage from '../groups/GroupsPage';
 import Leaderboard from '../gamification/Leaderboard';
 import { BadgeShowcase } from '../gamification/BadgeShowcase';
+import KnowledgeHub from '../knowledge/KnowledgeHub';
 
 interface DashboardProps {
   currentUser: any;
@@ -260,6 +261,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, setCurrentUser }) =>
         />
         <main className="flex-1 p-6 animate-fade-in">
           {activeView === 'feed' && <Feed currentUser={currentUser} posts={posts} createPost={createPost} />}
+          {activeView === 'knowledge' && <KnowledgeHub currentUser={currentUser} />}
           {activeView === 'network' && <Network currentUser={currentUser} sendConnectionRequest={sendConnectionRequest} setChatUser={setChatUser} setActiveView={setActiveView} />}
           {activeView === 'events' && <Events events={events} rsvpEvent={rsvpEvent} createEvent={createEvent} />}
           {activeView === 'mentorship' && <Mentorship requestMentorship={requestMentorship} />}
