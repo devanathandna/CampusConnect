@@ -18,7 +18,10 @@ import {
   GraduationCap,
   Users,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  X,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { KnowledgePost } from '../../types';
 import api from '../../services/api';
@@ -252,9 +255,342 @@ const KnowledgeHub: React.FC<KnowledgeHubProps> = ({ currentUser }) => {
     );
   };
 
+  // Create Post Modal Component
+  const CreatePostModal: React.FC = () => {
+    const [formData, setFormData] = useState({
+      title: '',
+      body: '',
+      category: 'career-advice',
+      tags: [] as string[],
+      company: '',
+      industry: '',
+      relatedSkills: [] as string[],
+      courseCodes: [] as string[],
+      isEvergreen: false,
+    });
+    const [tagInput, setTagInput] = useState('');
+    const [skillInput, setSkillInput] = useState('');
+    const [courseInput, setCourseInput] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const handleAddTag = () => {
+      if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+        setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
+        setTagInput('');
+      }
+    };
+
+    const handleAddSkill = () => {
+      if (skillInput.trim() && !formData.relatedSkills.includes(skillInput.trim())) {
+        setFormData({ ...formData, relatedSkills: [...formData.relatedSkills, skillInput.trim()] });
+        setSkillInput('');
+      }
+    };
+
+    const handleAddCourse = () => {
+      if (courseInput.trim() && !formData.courseCodes.includes(courseInput.trim())) {
+        setFormData({ ...formData, courseCodes: [...formData.courseCodes, courseInput.trim()] });
+        setCourseInput('');
+      }
+    };
+
+    const handleRemoveTag = (tag: string) => {
+      setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) });
+    };
+
+    const handleRemoveSkill = (skill: string) => {
+      setFormData({ ...formData, relatedSkills: formData.relatedSkills.filter(s => s !== skill) });
+    };
+
+    const handleRemoveCourse = (course: string) => {
+      setFormData({ ...formData, courseCodes: formData.courseCodes.filter(c => c !== course) });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      
+      if (!formData.title.trim() || !formData.body.trim()) {
+        setSubmitError('Title and body are required');
+        return;
+      }
+
+      setSubmitting(true);
+      setSubmitError(null);
+
+      try {
+        await api.createKnowledgePost(formData);
+        setShowCreateModal(false);
+        loadPosts(); // Reload posts
+        
+        // Reset form
+        setFormData({
+          title: '',
+          body: '',
+          category: 'career-advice',
+          tags: [],
+          company: '',
+          industry: '',
+          relatedSkills: [],
+          courseCodes: [],
+          isEvergreen: false,
+        });
+      } catch (err: any) {
+        setSubmitError(err.message || 'Failed to create post');
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">✍️ Share Your Knowledge</h2>
+            <button
+              onClick={() => setShowCreateModal(false)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {submitError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+                <p className="text-red-700">{submitError}</p>
+              </div>
+            )}
+
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="e.g., How to Ace the Google Technical Interview"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                aria-label="Select category"
+              >
+                {categories.filter(c => c.value !== 'all').map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.icon} {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Body */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Content <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={formData.body}
+                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                placeholder="Share your insights, tips, and advice in detail..."
+                rows={10}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {formData.body.length} characters
+              </p>
+            </div>
+
+            {/* Company */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Company (Optional)
+              </label>
+              <input
+                type="text"
+                value={formData.company}
+                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                placeholder="e.g., Google, Microsoft, Amazon"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Industry */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Industry (Optional)
+              </label>
+              <input
+                type="text"
+                value={formData.industry}
+                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                placeholder="e.g., Technology, Finance, Healthcare"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Tags
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                  placeholder="Add tags (e.g., interview, algorithms)"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddTag}
+                  className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.tags.map((tag) => (
+                  <span key={tag} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full flex items-center space-x-1">
+                    <span>{tag}</span>
+                    <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:text-blue-900">
+                      <Minus className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Related Skills */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Related Skills
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
+                  placeholder="Add skills (e.g., Python, System Design)"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSkill}
+                  className="px-4 py-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.relatedSkills.map((skill) => (
+                  <span key={skill} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full flex items-center space-x-1">
+                    <Code className="w-3 h-3" />
+                    <span>{skill}</span>
+                    <button type="button" onClick={() => handleRemoveSkill(skill)} className="hover:text-purple-900">
+                      <Minus className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Course Codes */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Course Codes (Optional)
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={courseInput}
+                  onChange={(e) => setCourseInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCourse())}
+                  placeholder="Add course codes (e.g., CS101, MATH202)"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCourse}
+                  className="px-4 py-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.courseCodes.map((course) => (
+                  <span key={course} className="px-3 py-1 bg-green-100 text-green-700 rounded-full flex items-center space-x-1">
+                    <GraduationCap className="w-3 h-3" />
+                    <span>{course}</span>
+                    <button type="button" onClick={() => handleRemoveCourse(course)} className="hover:text-green-900">
+                      <Minus className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Evergreen */}
+            <div>
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isEvergreen}
+                  onChange={(e) => setFormData({ ...formData, isEvergreen: e.target.checked })}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <div>
+                  <span className="font-semibold text-gray-700">Mark as Evergreen Content</span>
+                  <p className="text-sm text-gray-500">This advice will remain relevant over time</p>
+                </div>
+              </label>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Publishing...' : 'Publish Knowledge Post'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">\n      {/* Create Post Modal */}\n      {showCreateModal && <CreatePostModal />}\n\n      {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
