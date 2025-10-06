@@ -1,0 +1,98 @@
+# ============================================================================
+# FRONTEND - GITIGNORE
+# ============================================================================
+
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+
+# Testing
+/coverage
+.nyc_output/
+*.lcov
+
+# Production build
+/build
+/dist
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.history/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+._*
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+tmp/
+
+# React / Create React App specific
+/build/static/css/*.map
+/build/static/js/*.map
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Optional npm cache
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
