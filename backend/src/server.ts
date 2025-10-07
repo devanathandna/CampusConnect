@@ -47,8 +47,12 @@ const io = new SocketIOServer(server, {
 app.use(helmet()); // Security headers
 app.use(compression()); // Response compression
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
+  origin: [
+    'https://campus-connect-xi-livid.vercel.app',
+    'https://campus-connect-git-main-deavanathans-projects.vercel.app'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
