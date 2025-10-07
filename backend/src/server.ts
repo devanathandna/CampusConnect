@@ -47,10 +47,7 @@ const io = new SocketIOServer(server, {
 app.use(helmet()); // Security headers
 app.use(compression()); // Response compression
 app.use(cors({
-  origin: [
-    'https://campus-connect-xi-livid.vercel.app',
-    'https://campus-connect-git-main-deavanathans-projects.vercel.app'
-  ],
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
@@ -70,7 +67,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/campusconnect',
+    mongoUrl: process.env.MONGODB_URI || 'mongodb+srv://campusconnect:Jagath08@cluster0.sgk5s43.mongodb.net/campusconnect?retryWrites=true&w=majority&appName=Cluster0',
     ttl: 24 * 60 * 60 // 1 day
   }),
   cookie: {
